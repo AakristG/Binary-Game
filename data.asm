@@ -15,5 +15,8 @@
     lvl_msg:    .asciiz "\nLevel "
     inv_mode:   .asciiz "Invalid mode. Please enter 1 or 2.\n"
     end:        .asciiz "End of the game\n"
+    invalid:    .asciiz "Invalid choice. Try Again. \n"
+    next_lvl:   .asciiz "Proceeding to next level... \n"
+    game_over:  .asciiz "-------GAME OVER-----------"\n"
 
     bin_str:    .space 9

@@ -4,6 +4,10 @@
 # Description: An interactive game where the user can practice their binary to decimal converstion or decimal to binary converstion
 
 .include "SysCalls.asm"
+.include "data.asm"
+.include "display.asm"
+.include "binary_to_decimal.asm"
+.include "deciaml_to_binary.asm"
 
 .text
 
@@ -11,66 +15,44 @@
 .main
     li $v0, SysPrintString # call the print string syscall
     la $a0, welcome # load address of the welcome message
-    syscall # print the welcome
+    jal print_string # print the welcome by jumping to print_string link
 
-    li $v0, SysPrintString # call the print string syscall
-    la $a0, menu # load address of the menu message
-    syscall # print the menu
-
-    li $t0, 0 # score variable
-    li $t1, 1 # level variable
-
-startGame:
-    li $v0, SysPrintString
-    la $a0, mode_pick
+loop_for_game:
+    la $a0, menu
+    jal print_string
 
     li $v0, SysReadInt
-    li $a0, 1
-    li $a1, 2
     syscall
-    move $t2, $v0
+    move $t0, $v0
 
-   beq $t2, 1, mode_binary_to_decimal
-   beq $t2, 2, mode_decimal_to_binary
+    beq $t0, 1, modeOne
+    beq $t0, 2, modeTwo
 
+    la $a0, invalid
+    jal print_string
+    j loop_for_game
 
-loop_level:
-    bgt $t1, 10, endGame # stops the game after 10 levels
+# binary to decimal
+modeOne:
+    jal b_to_d_mode
+    j continue
 
-    li $v0, SysPrintString
-    la $a0, lvl_msg
-    syscall
+# decimal to binary
+modeTwo:
+    jal d_to_b_mode
+    j continue
 
-    li $v0, SysPrintInt
-    move $a0, $t1
-    syscall
+continue:
+    la $a0, next_lvl
+    jal print_string
 
-    li $v0, SysPrintString
-    la $a0, newline
-    syscall
+    addi $s0, $s0, 1
+    li $t1, 10
+    blt $s0, $t1, game_loop
 
-mode_binary_to_decimal:
-    
-
-mode_decimal_to_binary:
-
-
-endGame:
-    li $v0, SysPrintString
-    la $a0, score
-    la $a0, end
-    syscall
-
-    li $v0, SysPrintInt
-    move $a0, $t0
-    syscall
-
-    li $v0, SysPrintString
-    la $a0, newline
-    syscall
+    la $a0, game_over
+    jal print_string
 
     li $v0, SysExit
     syscall
 
-
-    
