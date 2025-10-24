@@ -1,0 +1,19 @@
+.data
+    welcome:    .asciiz "=== WELCOME TO THE BINARY GAME (MIPS) ===\n"
+    menu:       .asciiz "Press ENTER to start the game"
+    newline:    .asciiz "\n"
+    binary:     .asciiz "Convert this binary to decimal"
+    decimal:    .asciiz "Convert this decimal to binary"
+    correct:    .asciiz "Right answer!!"
+    incorrect:  .asciiz "Wrong answer. The correct answer was: "
+    score:      .asciiz "\n Your total score is: "
+    seperation: .asciiz "\n------------------------------\n"
+    mode_pick:  .asciiz "Pick your mode:\n Mode 1: Binary to Decimal\n Mode 2: Decimal to Binary\n"
+    hor_border: .asciiz "+---+---+---+---+---+---+---+---+---+\n"
+    ver_border: .asciiz "|\n||\n||\n||\n||\n||\n||\n||\n||\n||\n||\n||\n||\n|"
+    empty_box:  .asciiz "|   |   |   |   |   |   |   |   |   |"
+    lvl_msg:    .asciiz "\nLevel "
+    inv_mode:   .asciiz "Invalid mode. Please enter 1 or 2.\n"
+    end:        .asciiz "End of the game\n"
+
+    bin_str:    .space 9
