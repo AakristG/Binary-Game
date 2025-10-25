@@ -1,58 +1,99 @@
 # Header: Binary Game in MIPS
 # Author: Aakrist Godar
-# Date: Nov-18-2025
+# Date: Oct-18-2025
 # Description: An interactive game where the user can practice their binary to decimal converstion or decimal to binary converstion
 
 .include "SysCalls.asm"
 .include "data.asm"
-.include "display.asm"
-.include "binary_to_decimal.asm"
-.include "deciaml_to_binary.asm"
 
 .text
+    .globl main
 
+    main:
+    	addi $sp, $sp, -4   # Allocate space for $ra
+        sw $ra, 0($sp)      # Save $ra
+        
+    loop_for_game:
+        # Display menu and get input
+        la $a0, hor_border
+        li $v0, SysPrintString
+        syscall
+        
+        la $a0, welcome
+        li $v0, SysPrintString
+        syscall
+        
+    	la $a0, line
+        li $v0, SysPrintString
+        syscall
+        
+        la $a0, mode_pick
+        li $v0, SysPrintString
+        syscall
 
-.main
-    li $v0, SysPrintString # call the print string syscall
-    la $a0, welcome # load address of the welcome message
-    jal print_string # print the welcome by jumping to print_string link
+        la $a0, menu
+        li $v0, SysPrintString
+        syscall
+        
+        la $a0, hor_border
+        li $v0, SysPrintString
+        syscall
+        
+        la $a0, char_input   # $a0 = address of buffer
+        li $a1, 4              # $a1 = max length to read
+        li $v0, SysReadString  # SysCall code 8
+        syscall
+        
+        la $t0, char_input   # $t0 = address of input_buffer
+        lb $t1, 0($t0)         # $t1 = the ASCII value of the first character
 
-loop_for_game:
-    la $a0, menu
-    jal print_string
+        lb $t2, 1($t0) # load byte at t2
 
-    li $v0, SysReadInt
-    syscall
-    move $t0, $v0
+        li $t3, 10
+        bne $t2, $t3, check_null
 
-    beq $t0, 1, modeOne
-    beq $t0, 2, modeTwo
+        j check_char
 
-    la $a0, invalid
-    jal print_string
-    j loop_for_game
+    # Validate input length and char
+	check_null:
+        beqz $t2, check_char   # If second char IS '\0', input length is 1.
+        j invalid_input
 
-# binary to decimal
-modeOne:
-    jal b_to_d_mode
-    j continue
+    check_char:
+        li $t3, '1'
+        beq $t1, $t3, modeOne  # If char is 1, go to Mode 1
 
-# decimal to binary
-modeTwo:
-    jal d_to_b_mode
-    j continue
+        li $t3, '2'
+        beq $t1, $t3, modeTwo  # If char is 2, go to Mode 2
 
-continue:
-    la $a0, next_lvl
-    jal print_string
+    invalid_input:
+        la $a0, invalid
+        li $v0, SysPrintString
+        syscall
+        j loop_for_game
 
-    addi $s0, $s0, 1
-    li $t1, 10
-    blt $s0, $t1, game_loop
+    # binary to decimal (Mode 1 runs the full game until win/loss)
+    modeOne:
+        jal b_to_d_mode
+        j loop_for_game # Go back to menu after game ends
 
-    la $a0, game_over
-    jal print_string
-
-    li $v0, SysExit
-    syscall
-
+    # decimal to binary (Mode 2 runs the full game until win/loss)
+    modeTwo:
+        jal d_to_b_mode
+        j loop_for_game # Go back to menu after game ends
+        
+    exit_program:
+        la $a0, end
+        li $v0, SysPrintString
+        syscall
+        
+        li $v0, SysExit
+        syscall
+        
+        lw $ra, 0($sp)
+        addi $sp, $sp, 4
+        jr $ra
+        
+.include "display.asm" 
+.include "binary_to_decimal.asm"
+.include "decimal_to_binary.asm"
