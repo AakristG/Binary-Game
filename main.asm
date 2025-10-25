@@ -1,99 +1,120 @@
-# Header: Binary Game in MIPS
+# CS2340 Term Project
 # Author: Aakrist Godar
-# Date: Oct-18-2025
-# Description: An interactive game where the user can practice their binary to decimal converstion or decimal to binary converstion
+# Date: 10/24/2025
+# Description: This file is the main class which runs the entire project
 
 .include "SysCalls.asm"
 .include "data.asm"
 
 .text
-    .globl main
+	.globl main
+	
+	main: 
+		li $v0, SysPrintString	# print the string 
+		la $a0, hor_border # load the address of the horizontal border
+		syscall	# run the syscall
 
-    main:
-    	addi $sp, $sp, -4   # Allocate space for $ra
-        sw $ra, 0($sp)      # Save $ra
-        
-    loop_for_game:
-        # Display menu and get input
-        la $a0, hor_border
-        li $v0, SysPrintString
-        syscall
-        
-        la $a0, welcome
-        li $v0, SysPrintString
-        syscall
-        
-    	la $a0, line
-        li $v0, SysPrintString
-        syscall
-        
-        la $a0, mode_pick
-        li $v0, SysPrintString
-        syscall
+		li $v0, SysPrintString # print the string
+		la $a0, welcome # load address of welcome 
+		syscall # run the syscall
 
-        la $a0, menu
-        li $v0, SysPrintString
-        syscall
-        
-        la $a0, hor_border
-        li $v0, SysPrintString
-        syscall
-        
-        la $a0, char_input   # $a0 = address of buffer
-        li $a1, 4              # $a1 = max length to read
-        li $v0, SysReadString  # SysCall code 8
-        syscall
-        
-        la $t0, char_input   # $t0 = address of input_buffer
-        lb $t1, 0($t0)         # $t1 = the ASCII value of the first character
+		li $v0, SysPrintString
+		la $a0, menu
+		syscall
 
-        lb $t2, 1($t0) # load byte at t2
+		li $v0, SysPrintString
+		la $a0, hor_border
+		syscall
 
-        li $t3, 10
-        bne $t2, $t3, check_null
+		li $t1, 1
+		li $t2, 11
 
-        j check_char
+	press_enter:
+		# wait for Enter key press
+		li $v0, SysReadString
+		la $a0, buffer
+		li $a1, 2              # only need to read up to newline
+		syscall
 
-    # Validate input length and char
-	check_null:
-        beqz $t2, check_char   # If second char IS '\0', input length is 1.
-        j invalid_input
+		j game_loop
 
-    check_char:
-        li $t3, '1'
-        beq $t1, $t3, modeOne  # If char is 1, go to Mode 1
+	game_loop:
+		sub $t3, $t1, $t2
+		beqz $t3, end # if $t1 != $t2 then go to end
 
-        li $t3, '2'
-        beq $t1, $t3, modeTwo  # If char is 2, go to Mode 2
+		addi $sp, $sp, -8 # allocating 8 bytes
+		sw $t1, 4($sp)	# store value of $t2 in sp
+		sw $t2, 0($sp)	# store value of $t2 in sp
 
-    invalid_input:
-        la $a0, invalid
-        li $v0, SysPrintString
-        syscall
-        j loop_for_game
+		move $a1, $t1
+		jal current_level
 
-    # binary to decimal (Mode 1 runs the full game until win/loss)
-    modeOne:
-        jal b_to_d_mode
-        j loop_for_game # Go back to menu after game ends
+		lw $t1, 4($sp) 
+		move $t4, $t1
 
-    # decimal to binary (Mode 2 runs the full game until win/loss)
-    modeTwo:
-        jal d_to_b_mode
-        j loop_for_game # Go back to menu after game ends
-        
-    exit_program:
-        la $a0, end
-        li $v0, SysPrintString
-        syscall
-        
-        li $v0, SysExit
-        syscall
-        
-        lw $ra, 0($sp)
-        addi $sp, $sp, 4
-        jr $ra
-        
-.include "display.asm" 
-.include "binary_to_decimal.asm"
-.include "decimal_to_binary.asm"
+		
+	questions_loop:
+		beqz $t4, finish_loop
+
+		addi $sp, $sp, -12 # allocate 12 bytes of stack space
+		sw $t5, 8($sp)
+
+		jal start_binary_process
+
+		sw $v0, 4($sp)
+		sw $v1, 0($sp)
+
+		jal generateNumber
+
+		move $a0, $v0
+		lw $a1, 4($sp)
+		lw $a2, 0($sp)
+
+		jal initate_questioning
+
+		li $v0, SysPrintString
+		la $a0, newline
+		syscall
+
+		lw $t5, 8($sp)    # restore the value of $t5 at byte location 8
+		addi $sp, $sp, 12 # restore the storage
+		addi $t5, $t5, -1 # decrement the counter 
+		j questions_loop  # run the loop again until beqz is triggered
+
+	finish_loop:
+		lw $t2, 0($sp)	# load value of t2 at 0 offset
+		lw $t1, 4($sp)	# load value of t1 at 4 offset
+		addi $sp, $sp, 8	# saves the stack storage  
+
+		addi $t1, $t1, 1	# adds one to the level
+		j game_loop		# jumps back to game loop which keeps track of levels
+
+	current_level:
+		li $v0, SysPrintString
+		la $a0, hor_border
+		syscall
+
+		li $v0, SysPrintString
+		la $a0, lvl_msg
+		syscall
+
+		li $v0, SysPrintString
+		la $a0, hor_border
+		syscall
+
+	end:
+		li $v0, SysPrintString # syscall method to print string
+		la $a0, game_win # load address of game_win string 
+		syscall	# run the system call
+		
+		li $v0, SysExit # syscall method to exit
+		syscall	# run the syscall
+
+
+
+
+
+# I could have branched out to the main method skipping all the imports but this is easier and legal
+.include "numbers.asm"
+.include "user.asm"
+#.include "utils.asm"
