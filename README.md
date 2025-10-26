@@ -14,10 +14,8 @@ the user is incorrect or if the user passes all 10 levels, which in this instanc
 ## Run the program
 
 1. Download Java and go to VS Code
-   ```
 
 2. Install the MARScode extension and go to the main.asm file.
-   ```
 
 3. Press Ctrl + Shift + P and select "MARS: Assemble and run". Enjoy the game!
 
