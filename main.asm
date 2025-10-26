@@ -46,10 +46,7 @@
 		sw $t1, 4($sp)	# store value of $t2 in sp
 		sw $t2, 0($sp)	# store value of $t2 in sp
 
-
 		move $a1, $t1
-
-
 		jal current_level
 
 		lw $t1, 4($sp) 
